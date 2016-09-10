@@ -2,6 +2,7 @@
 #include "ConstantsAndEnums.h"
 #include <stdio.h>
 #include <iostream>
+#include <assert.h>
 
 class Desk
 {
@@ -21,14 +22,13 @@ private:
 	long long hTurn;
 	long long hash;
 
-	Story story[1000000];
+	Story story[1000];
 	int storyTop;
 
-	inline bool Valid(int x, int y);
+	bool Valid(int x, int y);
 	inline void NormolizeHash();
 	inline long long GetFieldHash(int x, int y);
 	inline int GetFieldBenefit(int x, int y);
-	void PrintMove(int fx, int fy, int tx, int ty);
 
 public:
 	int GetTurn();
@@ -37,9 +37,9 @@ public:
 	void CancelMove();
 	Color GetColor(int x, int y);
 	Figure GetFigure(int x, int y);
-	inline bool ValidEmpty(int x, int y);
-	inline bool ValidBoth(int x, int y, Color myColor);
-	inline bool ValidOpponent(int x, int y, Color myColor);
+	bool ValidEmpty(int x, int y);
+	bool ValidBoth(int x, int y, Color myColor);
+	bool ValidOpponent(int x, int y, Color myColor);
 	void CloneField(int fromX, int fromY, int toX, int toY);
 	void ClearField(int x, int y);
 	int GetHeuristicBenefit();

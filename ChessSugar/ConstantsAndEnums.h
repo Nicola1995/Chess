@@ -11,7 +11,7 @@ enum Color {
 };
 
 enum Figure {
-	PIECE, KING, EMPTY
+	PIECE, KING, NONE = 2
 };
 
 enum StoryType {

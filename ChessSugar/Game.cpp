@@ -4,6 +4,8 @@
 
 Game::Game()
 {
+	was = new int[HASH_MOD];
+	wasRes = new int[HASH_MOD];
 }
 
 
@@ -11,14 +13,19 @@ Game::~Game()
 {
 }
 
-int Game::Dfs(int depth, bool endWithMove = false)
+int Game::Dfs(int depth, bool endWithMove)
 {
+	static int unqNum = 0;
+	if (endWithMove) unqNum++;
+//	std::cerr << "dfs " << depth << " " << desk.GetTurn() << "\n";
 	desk.FixMove();
 	
-	if (was.find(desk.GetHash()) != was.end())
-		return was[desk.GetHash()];
-	if (depth >= MAX_DFS_DEPTH)
-		return was[desk.GetHash()] = desk.GetHeuristicBenefit();
+	if (was[desk.GetHash()] == unqNum)
+		return wasRes[desk.GetHash()];
+	was[desk.GetHash()] = unqNum;
+	if (depth >= MAX_DFS_DEPTH) {
+		return wasRes[desk.GetHash()] = desk.GetHeuristicBenefit();
+	}
 
 	DfsState report;
 	report.Init();
@@ -44,7 +51,7 @@ int Game::Dfs(int depth, bool endWithMove = false)
 						}
 					}
 					for (int dx = -1; dx <= 1; dx += 2) {
-						if (desk.ValidOpponent(x + dx, y + dy)) {
+						if (desk.ValidOpponent(x + dx, y + dy, curColor)) {
 							desk.CloneField(x, y, x + dx, y + dy);
 							desk.ClearField(x, y);
 							report.Apply(Dfs(depth + 1), x, y, x + dx, y + dy);
@@ -58,10 +65,25 @@ int Game::Dfs(int depth, bool endWithMove = false)
 			}
 
 	if (endWithMove) {
+		PrintMove(report.fromX, report.fromY, report.toX, report.toY);
 		desk.CloneField(report.fromX, report.fromY, report.toX, report.toY);
 		desk.ClearField(report.fromX, report.fromY);
 	}
-	return was[desk.GetHash()] = -report.best;
+	return wasRes[desk.GetHash()] = -report.best;
+}
+
+void Game::PrintMove(int fx, int fy, int tx, int ty)
+{
+	if (desk.GetTurn() & 1)
+		printf("Whites:\n");
+	else
+		printf("Blacks:\n");
+	printf("%c%d - %c%d\n", 'A' + fx, 1 + fy, 'A' + tx, 1 + ty);
+}
+
+void Game::NewGame()
+{
+	desk.NewGame();
 }
 
 #pragma region DfsState functions

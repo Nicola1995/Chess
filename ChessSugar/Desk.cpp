@@ -20,6 +20,7 @@ Desk::~Desk()
 
 long long Desk::GetHash()
 {
+	assert(hash >= 0 && hash < HASH_MOD);
 	return hash;
 }
 
@@ -47,26 +48,26 @@ int Desk::GetHeuristicBenefit()
 
 #pragma region Validation functions
 
-inline bool Desk::Valid(int x, int y)
+bool Desk::Valid(int x, int y)
 {
 	return x >= 0 && x < 8 && y >= 0 && y < 8;
 }
 
-inline bool Desk::ValidEmpty(int x, int y)
+bool Desk::ValidEmpty(int x, int y)
 {
-	return Valid(x, y) && color[x][y] == Color::EMPTY;
+	return Valid(x, y) && (color[x][y] == Color::EMPTY);
 }
 
-inline bool Desk::ValidOpponent(int x, int y, Color myColor)
+bool Desk::ValidOpponent(int x, int y, Color myColor)
 {
 	if (myColor == Color::WHITE)
 		myColor = Color::BLACK;
 	else
 		myColor = Color::WHITE;
-	return Valid(x, y) && color[x][y] == myColor;
+	return Valid(x, y) && (color[x][y] == myColor);
 }
 
-inline bool Desk::ValidBoth(int x, int y, Color myColor)
+bool Desk::ValidBoth(int x, int y, Color myColor)
 {
 	return ValidEmpty(x, y) || ValidOpponent(x, y, myColor);
 }
@@ -103,18 +104,21 @@ void Desk::CancelMove()
 		benefit *= -1;
 	}
 	while (story[storyTop].type != StoryType::NXT_TURN) {
+		assert(storyTop > 0);
 		if (story[storyTop].type == StoryType::FIELD_CHANGE) {
 			int x = story[storyTop].x;
 			int y = story[storyTop].y;
 			hash -= GetFieldHash(x, y);
 			benefit -= GetFieldBenefit(x, y);
 			figure[x][y] = story[storyTop].oldFigure;
+			assert(figure[x][y] == Figure::NONE || figure[x][y] == Figure::PIECE);
 			color[x][y] = story[storyTop].oldColor;
 			hash += GetFieldHash(x, y);
 			benefit += GetFieldBenefit(x, y);
 		}
 		storyTop--;
 	}
+	storyTop++;
 	NormolizeHash();
 }
 
@@ -127,11 +131,13 @@ void Desk::ClearField(int x, int y)
 	story[storyTop].y = y;
 	story[storyTop].oldColor = color[x][y];
 	story[storyTop].oldFigure = figure[x][y];
+	assert(figure[x][y] == Figure::NONE || figure[x][y] == Figure::PIECE);
 	storyTop++;
 	color[x][y] = Color::EMPTY;
-	figure[x][y] = Figure::EMPTY;
+	figure[x][y] = Figure::NONE;
 	hash += GetFieldHash(x, y);
 	benefit += GetFieldBenefit(x, y);
+	NormolizeHash();
 }
 
 void Desk::CloneField(int fromX, int fromY, int toX, int toY)
@@ -141,21 +147,23 @@ void Desk::CloneField(int fromX, int fromY, int toX, int toY)
 	story[storyTop].type = StoryType::FIELD_CHANGE;
 	story[storyTop].x = toX;
 	story[storyTop].y = toY;
-	story[storyTop].oldColor = color[fromX][fromY];
-	story[storyTop].oldFigure = figure[fromX][fromY];
+	story[storyTop].oldColor = color[toX][toY];
+	story[storyTop].oldFigure = figure[toX][toY];
 	storyTop++;
 	color[toX][toY] = color[fromX][fromY];
 	figure[toX][toY] = figure[fromX][fromY];
+	assert(figure[toX][toY] == Figure::NONE || figure[toX][toY] == Figure::PIECE);
 	hash += GetFieldHash(toX, toY);
 	benefit += GetFieldBenefit(toX, toY);
-	ClearField(fromX, fromY);
+	//ClearField(fromX, fromY);
+	NormolizeHash();
 }
 
 inline long long Desk::GetFieldHash(int x, int y)
 {
 	long long ret;
 	switch (figure[x][y]) {
-	case Figure::EMPTY:
+	case Figure::NONE:
 		ret = 0;
 		break;
 	case Figure::PIECE:
@@ -169,7 +177,7 @@ inline long long Desk::GetFieldHash(int x, int y)
 
 inline int Desk::GetFieldBenefit(int x, int y)
 {
-	if (figure[x][y] == Figure::EMPTY)
+	if (figure[x][y] == Figure::NONE)
 		return 0;
 	int ret;
 	switch (figure[x][y]) {
@@ -192,7 +200,7 @@ void Desk::NewGame()
 	for (int x = 0; x < 8; x++)
 		for (int y = 0; y < 8; y++) {
 			color[x][y] = Color::EMPTY;
-			figure[x][y] = Figure::EMPTY;
+			figure[x][y] = Figure::NONE;
 		}
 	for (int x = 0; x < 8; x++)
 	{
@@ -203,11 +211,6 @@ void Desk::NewGame()
 		figure[x][6] = Figure::PIECE;
 		hash += GetFieldHash(x, 6);
 	}
-}
-
-void Desk::PrintMove(int fx, int fy, int tx, int ty)
-{
-	printf("%c%d - %c%d\n", 'a' + fx, '1' + fy, 'a' + tx, '1' + ty);
 }
 
 #pragma endregion

@@ -4,3 +4,11 @@ ChessSugar.sdf
 ChessSugar.sln
 ChessSugar/ChessSugar.vcxproj
 ChessSugar/ChessSugar.vcxproj.filters
+*.log
+*.tlog
+*.lastbuildstate
+*.obj
+*.idb
+*.pdb
+*.exe
+*.ilk

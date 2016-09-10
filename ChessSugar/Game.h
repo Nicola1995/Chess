@@ -2,7 +2,6 @@
 #include "Desk.h"
 #include "ConstantsAndEnums.h"
 #include <stdio.h>
-#include <map>
 
 
 class Game
@@ -18,11 +17,14 @@ private:
 
 	Desk desk;
 
-	std::map<long long, int> was;
+	int * was; //[HASH_MOD];
+	int  * wasRes; //[HASH_MOD];
 
 public:
 
+	void NewGame();
 	int Dfs(int depth, bool endWithMove = false);
+	void PrintMove(int fx, int fy, int tx, int ty);
 	Game();
 	~Game();
 };
