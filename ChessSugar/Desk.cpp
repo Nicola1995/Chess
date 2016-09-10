@@ -134,7 +134,81 @@ void Desk::ClearField(int x, int y)
 	benefit += GetFieldBenefit(x, y);
 }
 
+void Desk::CloneField(int fromX, int fromY, int toX, int toY)
+{
+	hash -= GetFieldHash(toX, toY);
+	benefit -= GetFieldBenefit(toX, toY);
+	story[storyTop].type = StoryType::FIELD_CHANGE;
+	story[storyTop].x = toX;
+	story[storyTop].y = toY;
+	story[storyTop].oldColor = color[fromX][fromY];
+	story[storyTop].oldFigure = figure[fromX][fromY];
+	storyTop++;
+	color[toX][toY] = color[fromX][fromY];
+	figure[toX][toY] = figure[fromX][fromY];
+	hash += GetFieldHash(toX, toY);
+	benefit += GetFieldBenefit(toX, toY);
+	ClearField(fromX, fromY);
+}
 
+inline long long Desk::GetFieldHash(int x, int y)
+{
+	long long ret;
+	switch (figure[x][y]) {
+	case Figure::EMPTY:
+		ret = 0;
+		break;
+	case Figure::PIECE:
+		ret = 1;
+		break;
+	}
+	if (color[x][y] == Color::BLACK)
+		ret += FIG_NUM + 1;
+	return (ret * hMult[x][y]) % HASH_MOD;
+}
+
+inline int Desk::GetFieldBenefit(int x, int y)
+{
+	if (figure[x][y] == Figure::EMPTY)
+		return 0;
+	int ret;
+	switch (figure[x][y]) {
+	case Figure::PIECE:
+		ret = 1;
+		break;
+	}
+	if (color[x][y] != (turn & 1 ? Color::WHITE : Color::BLACK))
+		ret *= -1;
+	return ret;
+}
+
+void Desk::NewGame()
+{
+	benefit = 0;
+	turn = 0;
+	hash = 0;
+	storyTop = 0;
+
+	for (int x = 0; x < 8; x++)
+		for (int y = 0; y < 8; y++) {
+			color[x][y] = Color::EMPTY;
+			figure[x][y] = Figure::EMPTY;
+		}
+	for (int x = 0; x < 8; x++)
+	{
+		color[x][1] = Color::WHITE;
+		figure[x][1] = Figure::PIECE;
+		hash += GetFieldHash(x, 1);
+		color[x][6] = Color::BLACK;
+		figure[x][6] = Figure::PIECE;
+		hash += GetFieldHash(x, 6);
+	}
+}
+
+void Desk::PrintMove(int fx, int fy, int tx, int ty)
+{
+	printf("%c%d - %c%d\n", 'a' + fx, '1' + fy, 'a' + tx, '1' + ty);
+}
 
 #pragma endregion
 

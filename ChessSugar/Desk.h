@@ -1,5 +1,4 @@
 #pragma once
-#pragma once
 #include "ConstantsAndEnums.h"
 #include <stdio.h>
 #include <iostream>
@@ -29,6 +28,7 @@ private:
 	inline void NormolizeHash();
 	inline long long GetFieldHash(int x, int y);
 	inline int GetFieldBenefit(int x, int y);
+	void PrintMove(int fx, int fy, int tx, int ty);
 
 public:
 	int GetTurn();
