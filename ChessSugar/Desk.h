@@ -43,6 +43,7 @@ public:
 	void CloneField(int fromX, int fromY, int toX, int toY);
 	void ClearField(int x, int y);
 	int GetHeuristicBenefit();
+	int GetRealBenefit();
 	void NewGame();
 	Desk();
 	~Desk();

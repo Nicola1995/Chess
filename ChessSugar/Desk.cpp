@@ -44,6 +44,19 @@ int Desk::GetHeuristicBenefit()
 	return benefit;
 }
 
+int Desk::GetRealBenefit()
+{
+	Color curColor = (turn & 1) ? Color::WHITE : Color::BLACK;
+	int ret = 0;
+	for (int i = 0; i < 8; i++)
+		for (int j = 0; j < 8; j++)
+			if (color[i][j] == curColor)
+				ret++;
+			else if (color[i][j] != Color::EMPTY)
+				ret--;
+	return ret;
+}
+
 #pragma endregion
 
 #pragma region Validation functions

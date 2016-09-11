@@ -20,6 +20,9 @@ int Game::Dfs(int depth, bool endWithMove)
 //	std::cerr << "dfs " << depth << " " << desk.GetTurn() << "\n";
 	desk.FixMove();
 	
+	//very slow!!!
+	//assert(desk.GetHeuristicBenefit() == desk.GetRealBenefit());
+
 	if (was[desk.GetHash()] == unqNum)
 		return wasRes[desk.GetHash()];
 	was[desk.GetHash()] = unqNum;
@@ -63,6 +66,8 @@ int Game::Dfs(int depth, bool endWithMove)
 
 				}
 			}
+	if (report.best > INF)
+		return wasRes[desk.GetHash()] = desk.GetHeuristicBenefit();
 
 	if (endWithMove) {
 		PrintMove(report.fromX, report.fromY, report.toX, report.toY);
@@ -101,7 +106,7 @@ void Game::DfsState::Apply(int res, int fx, int fy, int tx, int ty)
 		changeProbability = 2;
 		fromX = fx, fromY = fy, toX = tx, toY = ty;
 	}
-	else if (res == best && ((changeProbability - 1) & rand()) == 0) {
+	else if (res == best && (((changeProbability - 1) & rand()) == 0)) {
 		changeProbability <<= 1;
 		fromX = fx, fromY = fy, toX = tx, toY = ty;
 	}
