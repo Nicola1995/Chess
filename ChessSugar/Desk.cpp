@@ -124,7 +124,7 @@ void Desk::CancelMove()
 			hash -= GetFieldHash(x, y);
 			benefit -= GetFieldBenefit(x, y);
 			figure[x][y] = story[storyTop].oldFigure;
-			assert(figure[x][y] == Figure::NONE || figure[x][y] == Figure::PIECE);
+		//	assert(figure[x][y] == Figure::NONE || figure[x][y] == Figure::PIECE);
 			color[x][y] = story[storyTop].oldColor;
 			hash += GetFieldHash(x, y);
 			benefit += GetFieldBenefit(x, y);
@@ -144,7 +144,9 @@ void Desk::ClearField(int x, int y)
 	story[storyTop].y = y;
 	story[storyTop].oldColor = color[x][y];
 	story[storyTop].oldFigure = figure[x][y];
-	assert(figure[x][y] == Figure::NONE || figure[x][y] == Figure::PIECE);
+	assert(figure[x][y] == Figure::NONE || 
+		   figure[x][y] == Figure::PIECE ||
+		   figure[x][y] == Figure::HORSE);
 	storyTop++;
 	color[x][y] = Color::EMPTY;
 	figure[x][y] = Figure::NONE;
@@ -165,7 +167,7 @@ void Desk::CloneField(int fromX, int fromY, int toX, int toY)
 	storyTop++;
 	color[toX][toY] = color[fromX][fromY];
 	figure[toX][toY] = figure[fromX][fromY];
-	assert(figure[toX][toY] == Figure::NONE || figure[toX][toY] == Figure::PIECE);
+	//assert(figure[toX][toY] == Figure::NONE || figure[toX][toY] == Figure::PIECE);
 	hash += GetFieldHash(toX, toY);
 	benefit += GetFieldBenefit(toX, toY);
 	//ClearField(fromX, fromY);
@@ -182,6 +184,9 @@ inline long long Desk::GetFieldHash(int x, int y)
 	case Figure::PIECE:
 		ret = 1;
 		break;
+	case Figure::HORSE:
+		ret = 2;
+		break;
 	}
 	if (color[x][y] == Color::BLACK)
 		ret += FIG_NUM + 1;
@@ -197,8 +202,11 @@ inline int Desk::GetFieldBenefit(int x, int y)
 	case Figure::PIECE:
 		ret = 1;
 		break;
+	case Figure::HORSE:
+		ret = 3;
+		break;
 	}
-	if (color[x][y] != (turn & 1 ? Color::WHITE : Color::BLACK))
+	if (color[x][y] != ((turn & 1) ? Color::WHITE : Color::BLACK))
 		ret *= -1;
 	return ret;
 }
@@ -224,8 +232,32 @@ void Desk::NewGame()
 		figure[x][6] = Figure::PIECE;
 		hash += GetFieldHash(x, 6);
 	}
+	color[1][0] = color[6][0] = Color::WHITE;
+	color[1][7] = color[6][7] = Color::BLACK;
+	figure[1][0] = figure[1][7] = figure[6][7] = figure[6][0] = Figure::HORSE;
 }
 
 #pragma endregion
 
-
+void Desk::PrintPosition()
+{
+	printf("\n");
+	for (int y = 7; y >= 0; y--){
+		for (int x = 0; x < 8; x++) {
+			switch (figure[x][y]) {
+			case Figure::NONE:
+				putchar('.');
+				break;
+			case Figure::PIECE:
+				putchar('a' + (color[x][y] == Color::BLACK));
+				break;
+			case Figure::HORSE:
+				putchar('A' + (color[x][y] == Color::BLACK));
+				break;
+			}
+		}
+		printf("\n");
+	}
+	//printf("\nType smth to continue\n");
+	//std::cin.get();
+}

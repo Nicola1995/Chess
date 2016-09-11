@@ -45,6 +45,7 @@ public:
 	int GetHeuristicBenefit();
 	int GetRealBenefit();
 	void NewGame();
+	void PrintPosition();
 	Desk();
 	~Desk();
 };

@@ -2,7 +2,7 @@
 #include "Desk.h"
 #include "ConstantsAndEnums.h"
 #include <stdio.h>
-
+#include <string>
 
 class Game
 {
@@ -25,6 +25,7 @@ public:
 	void NewGame();
 	int Dfs(int depth, bool endWithMove = false);
 	void PrintMove(int fx, int fy, int tx, int ty);
+	void UserMove();
 	Game();
 	~Game();
 };

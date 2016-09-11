@@ -13,6 +13,24 @@ Game::~Game()
 {
 }
 
+void Game::UserMove()
+{
+	printf("Your move:\n");
+	int fy, ty, fx, tx;
+
+	std::string umove;
+	std::cin >> umove;
+	fx = umove[0] - 'a';
+	fy = umove[1] - '1';
+	tx = umove[3] - 'a';
+	ty = umove[4] - '1';
+
+	desk.FixMove();
+	desk.CloneField(fx, fy, tx, ty);
+	desk.ClearField(fx, fy);
+	desk.PrintPosition();
+}
+
 int Game::Dfs(int depth, bool endWithMove)
 {
 	static int unqNum = 0;
@@ -23,8 +41,8 @@ int Game::Dfs(int depth, bool endWithMove)
 	//very slow!!!
 	//assert(desk.GetHeuristicBenefit() == desk.GetRealBenefit());
 
-	if (was[desk.GetHash()] == unqNum)
-		return wasRes[desk.GetHash()];
+	//if (was[desk.GetHash()] == unqNum)
+	//	return wasRes[desk.GetHash()];
 	was[desk.GetHash()] = unqNum;
 	if (depth >= MAX_DFS_DEPTH) {
 		return wasRes[desk.GetHash()] = desk.GetHeuristicBenefit();
@@ -38,9 +56,10 @@ int Game::Dfs(int depth, bool endWithMove)
 		for (int y = 0; y < 8; y++)
 			if (desk.GetColor(x, y) == curColor) {
 				switch (desk.GetFigure(x, y)) {
+					int dy;
 #pragma region Moves of PIECE
 				case Figure::PIECE:
-					int dy = curColor == Color::WHITE ? 1 : -1;
+					dy = curColor == Color::WHITE ? 1 : -1;
 					if (desk.ValidEmpty(x, y + dy)) {
 						desk.CloneField(x, y, x, y + dy);
 						desk.ClearField(x, y);
@@ -64,15 +83,30 @@ int Game::Dfs(int depth, bool endWithMove)
 					break;
 #pragma endregion
 
+#pragma region Moves of HORSE
+				case Figure::HORSE:
+					static int hdx[] = {2, 1, -1, -2, -2, -1, 1, 2};
+					static int hdy[] = {1, 2, 2, 1, -1, -2, -2, -1};
+					for (int ht = 0; ht < 8; ht++) {
+						if (desk.ValidBoth(x + hdx[ht], y + hdy[ht], curColor)) {
+							desk.CloneField(x, y, x + hdx[ht], y + hdy[ht]);
+							desk.ClearField(x, y);
+							report.Apply(Dfs(depth + 1), x, y, x + hdx[ht], y + hdy[ht]);
+							desk.CancelMove();
+						}
+					}
+					break;
+#pragma endregion
+
 				}
 			}
 	if (report.best > INF)
 		return wasRes[desk.GetHash()] = desk.GetHeuristicBenefit();
 
 	if (endWithMove) {
-		PrintMove(report.fromX, report.fromY, report.toX, report.toY);
 		desk.CloneField(report.fromX, report.fromY, report.toX, report.toY);
 		desk.ClearField(report.fromX, report.fromY);
+		PrintMove(report.fromX, report.fromY, report.toX, report.toY);
 	}
 	return wasRes[desk.GetHash()] = -report.best;
 }
@@ -84,6 +118,7 @@ void Game::PrintMove(int fx, int fy, int tx, int ty)
 	else
 		printf("Blacks:\n");
 	printf("%c%d - %c%d\n", 'A' + fx, 1 + fy, 'A' + tx, 1 + ty);
+	desk.PrintPosition();
 }
 
 void Game::NewGame()
