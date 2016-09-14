@@ -17,22 +17,29 @@ private:
 	Color color[8][8];
 	Figure figure[8][8];
 	int turn, benefit;
-	
+
+#ifdef HASH_ACTIVE
 	long long hMult[8][8];
 	long long hTurn;
 	long long hash;
+#endif
 
 	Story story[1000];
 	int storyTop;
 
 	bool Valid(int x, int y);
+#ifdef HASH_ACTIVE
 	inline void NormolizeHash();
 	inline long long GetFieldHash(int x, int y);
+#endif // HASH_ACTIVE
+	
 	inline int GetFieldBenefit(int x, int y);
 
 public:
 	int GetTurn();
+#ifdef HASH_ACTIVE
 	long long GetHash();
+#endif
 	void FixMove();
 	void CancelMove();
 	Color GetColor(int x, int y);

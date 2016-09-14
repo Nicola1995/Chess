@@ -17,10 +17,13 @@ private:
 
 	Desk desk;
 
+#ifdef HASH_ACTIVE
 	int * was; //[HASH_MOD];
 	int  * wasRes; //[HASH_MOD];
+#endif // HASH_ACTIVE
 
 public:
+	long long callCnt;
 
 	void NewGame();
 	int Dfs(int depth, bool endWithMove = false);
