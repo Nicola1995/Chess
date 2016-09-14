@@ -167,7 +167,8 @@ void Desk::ClearField(int x, int y)
 		   figure[x][y] == Figure::HORSE ||
 		   figure[x][y] == Figure::BISHOP ||
 		   figure[x][y] == Figure::ROOK ||
-		   figure[x][y] == Figure::QUEEN);
+		   figure[x][y] == Figure::QUEEN ||
+		   figure[x][y] == Figure::KING);
 	storyTop++;
 	color[x][y] = Color::EMPTY;
 	figure[x][y] = Figure::NONE;
@@ -202,6 +203,24 @@ void Desk::CloneField(int fromX, int fromY, int toX, int toY)
 	//ClearField(fromX, fromY);
 #ifdef HASH_ACTIVE
 	NormolizeHash();
+#endif
+}
+
+void Desk::SetField(int x, int y, Color clr, Figure fig)
+{
+	benefit -= GetFieldBenefit(x, y);
+	story[storyTop].type = StoryType::FIELD_CHANGE;
+	story[storyTop].x = x;
+	story[storyTop].y = y;
+	story[storyTop].oldColor = color[x][y];
+	story[storyTop].oldFigure = figure[x][y];
+	storyTop++;
+	figure[x][y] = fig;
+	color[x][y] = clr;
+	benefit += GetFieldBenefit(x, y);
+
+#ifdef HASH_ACTIVE
+	ошибка компиляции
 #endif
 }
 
@@ -253,6 +272,8 @@ inline int Desk::GetFieldBenefit(int x, int y)
 	case Figure::QUEEN:
 		ret = 8;
 		break;
+	case Figure::KING:
+		ret = INF + 100;
 	}
 	if (color[x][y] != ((turn & 1) ? Color::WHITE : Color::BLACK))
 		ret *= -1;
@@ -302,6 +323,10 @@ void Desk::NewGame()
 	color[3][0] = Color::WHITE;
 	color[3][7] = Color::BLACK;
 	figure[3][0] = figure[3][7] = Figure::QUEEN;
+
+	color[4][0] = Color::WHITE;
+	color[4][7] = Color::BLACK;
+	figure[4][0] = figure[4][7] = Figure::KING;
 }
 
 #pragma endregion

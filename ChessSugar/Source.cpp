@@ -23,9 +23,9 @@ int main()
 			printf("Depth = %d\n", MAX_DFS_DEPTH - startDepth);
 			game.Dfs(startDepth, true);
 			printStructural(game.callCnt);
-			if (game.callCnt < 1000000)
+			if (game.callCnt < 400000)
 				startDepth--;
-			if (game.callCnt > 10000000)
+			if (game.callCnt > 7000000)
 				startDepth++;
 
 			putchar('\n');

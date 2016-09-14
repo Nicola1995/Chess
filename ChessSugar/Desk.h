@@ -49,6 +49,7 @@ public:
 	bool ValidOpponent(int x, int y, Color myColor);
 	void CloneField(int fromX, int fromY, int toX, int toY);
 	void ClearField(int x, int y);
+	void SetField(int x, int y, Color color, Figure figure);
 	int GetHeuristicBenefit();
 	int GetRealBenefit();
 	void NewGame();

@@ -38,7 +38,8 @@ int Game::Dfs(int depth, bool endWithMove)
 	callCnt++;
 	static int unqNum = 0;
 	if (endWithMove) unqNum++;
-//	std::cerr << "dfs " << depth << " " << desk.GetTurn() << "\n";
+	//std::cerr << "dfs " << depth << "\n";
+	//	std::cerr << "dfs " << depth << " " << desk.GetTurn() << "\n";
 	desk.FixMove();
 	
 	//very slow!!!
@@ -50,14 +51,17 @@ int Game::Dfs(int depth, bool endWithMove)
 	was[desk.GetHash()] = unqNum;
 #endif // DEBUG
 
-	
-	if (depth >= MAX_DFS_DEPTH) {
+	if (abs(desk.GetHeuristicBenefit()) > INF)
+		return desk.GetHeuristicBenefit();
+	 
+	if (depth >= MAX_DFS_DEPTH + 2) {
 #ifdef HASH_ACTIVE
 		return wasRes[desk.GetHash()] = desk.GetHeuristicBenefit();
 #else
 		return desk.GetHeuristicBenefit();
 #endif
 	}
+	
 
 	DfsState report;
 	report.Init();
@@ -77,9 +81,11 @@ int Game::Dfs(int depth, bool endWithMove)
 #pragma region Moves of PIECE
 				case Figure::PIECE:
 					dy = curColor == Color::WHITE ? 1 : -1;
-					if (desk.ValidEmpty(x, y + dy)) {
+					if (depth < MAX_DFS_DEPTH && desk.ValidEmpty(x, y + dy)) {
 						desk.CloneField(x, y, x, y + dy);
 						desk.ClearField(x, y);
+						if (y + dy == 0 || y + dy == 7)
+							desk.SetField(x, y + dy, curColor, Figure::QUEEN);
 						report.Apply(Dfs(depth + 1), x, y, x, y + dy);
 						desk.CancelMove();
 						if ((y == 1 || y == 6) && desk.ValidEmpty(x, y + 2 * dy)) {
@@ -104,7 +110,10 @@ int Game::Dfs(int depth, bool endWithMove)
 				case Figure::HORSE:
 					
 					for (int ht = 0; ht < 8; ht++) {
-						if (desk.ValidBoth(x + hdx[ht], y + hdy[ht], curColor)) {
+						if (desk.ValidBoth(x + hdx[ht], y + hdy[ht], curColor) &&
+							(depth < MAX_DFS_DEPTH ||
+								desk.ValidOpponent(x + hdx[ht], y + hdy[ht], curColor)
+								)) {
 							desk.CloneField(x, y, x + hdx[ht], y + hdy[ht]);
 							desk.ClearField(x, y);
 							report.Apply(Dfs(depth + 1), x, y, x + hdx[ht], y + hdy[ht]);
@@ -120,6 +129,11 @@ int Game::Dfs(int depth, bool endWithMove)
 						int k = 1;
 						while (true) {
 							if (desk.ValidBoth(x + ldx[dir] * k, y + ldy[dir] * k, curColor)) {
+								if (!(depth < MAX_DFS_DEPTH ||
+									desk.ValidOpponent(x + ldx[dir] * k, y + ldy[dir] * k, curColor))) {
+									k++;
+									continue;
+								}
 								desk.CloneField(x, y, x + ldx[dir] * k, y + ldy[dir] * k);
 								desk.ClearField(x, y);
 								report.Apply(Dfs(depth + 1), x, y, x + ldx[dir] * k, y + ldy[dir] * k);
@@ -138,6 +152,11 @@ int Game::Dfs(int depth, bool endWithMove)
 						int k = 1;
 						while (true) {
 							if (desk.ValidBoth(x + ldx[dir] * k, y + ldy[dir] * k, curColor)) {
+								if (!(depth < MAX_DFS_DEPTH ||
+									desk.ValidOpponent(x + ldx[dir] * k, y + ldy[dir] * k, curColor))) {
+									k++;
+									continue;
+								}
 								desk.CloneField(x, y, x + ldx[dir] * k, y + ldy[dir] * k);
 								desk.ClearField(x, y);
 								report.Apply(Dfs(depth + 1), x, y, x + ldx[dir] * k, y + ldy[dir] * k);
@@ -156,6 +175,11 @@ int Game::Dfs(int depth, bool endWithMove)
 						int k = 1;
 						while (true) {
 							if (desk.ValidBoth(x + ldx[dir] * k, y + ldy[dir] * k, curColor)) {
+								if (!(depth < MAX_DFS_DEPTH ||
+									desk.ValidOpponent(x + ldx[dir] * k, y + ldy[dir] * k, curColor))) {
+									k++;
+									continue;
+								}
 								desk.CloneField(x, y, x + ldx[dir] * k, y + ldy[dir] * k);
 								desk.ClearField(x, y);
 								report.Apply(Dfs(depth + 1), x, y, x + ldx[dir] * k, y + ldy[dir] * k);
@@ -170,6 +194,23 @@ int Game::Dfs(int depth, bool endWithMove)
 					}
 					break;
 #pragma endregion
+
+#pragma region Moves of KING
+				case Figure::KING:
+					for (int dir = 0; dir < 8; dir++) {
+						if (desk.ValidBoth(x + ldx[dir], y + ldy[dir], curColor)) {
+							if (!(depth < MAX_DFS_DEPTH ||
+								desk.ValidOpponent(x + ldx[dir], y + ldy[dir], curColor)))
+								continue;
+							desk.CloneField(x, y, x + ldx[dir], y + ldy[dir]);
+							desk.ClearField(x, y);
+							report.Apply(Dfs(depth + 1), x, y, x + ldx[dir], y + ldy[dir]);
+							desk.CancelMove();
+						}
+					}
+					break;
+#pragma endregion
+
 				}
 			}
 			if (report.best > INF)
