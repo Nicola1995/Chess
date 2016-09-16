@@ -11,7 +11,7 @@ private:
 		int best, localRes;
 		int fromX, fromY, toX, toY;
 		int changeProbability;
-		void Apply(int res, int fx, int fy, int tx, int ty);
+		int Apply(int res, int fx, int fy, int tx, int ty);
 		void Init();
 	};
 

@@ -196,7 +196,10 @@ int Game::Dfs(int depth, bool endWithMove)
 #pragma endregion
 
 #pragma region Moves of KING
+				
 				case Figure::KING:
+					bool freeLeft = false, freeRight = false;
+					
 					for (int dir = 0; dir < 8; dir++) {
 						if (desk.ValidBoth(x + ldx[dir], y + ldy[dir], curColor)) {
 							if (!(depth < MAX_DFS_DEPTH ||
@@ -204,10 +207,19 @@ int Game::Dfs(int depth, bool endWithMove)
 								continue;
 							desk.CloneField(x, y, x + ldx[dir], y + ldy[dir]);
 							desk.ClearField(x, y);
-							report.Apply(Dfs(depth + 1), x, y, x + ldx[dir], y + ldy[dir]);
+							int localRes = report.Apply(Dfs(depth + 1), x, y, x + ldx[dir], y + ldy[dir]);
+							if (dir == 2 && localRes < INF)
+								freeLeft = true;
+							if (dir == 0 && localRes < INF)
+								freeRight = true;
 							desk.CancelMove();
 						}
 					}
+					
+					if (freeRight && desk.CastlingEnable(true)) {
+						//здесь мы должны сделать рокировку
+					}
+
 					break;
 #pragma endregion
 
@@ -258,7 +270,7 @@ void Game::DfsState::Init()
 	changeProbability = 2;
 }
 
-void Game::DfsState::Apply(int res, int fx, int fy, int tx, int ty)
+int Game::DfsState::Apply(int res, int fx, int fy, int tx, int ty)
 {
 	if (res < best) {
 		best = res;
@@ -269,6 +281,7 @@ void Game::DfsState::Apply(int res, int fx, int fy, int tx, int ty)
 		changeProbability <<= 1;
 		fromX = fx, fromY = fy, toX = tx, toY = ty;
 	}
+	return res;
 }
 
 #pragma endregion

@@ -14,9 +14,11 @@ private:
 		Figure oldFigure;
 	};
 	
+
 	Color color[8][8];
 	Figure figure[8][8];
-	int turn, benefit;
+	int turn, benefit, focusX, focusY;
+	bool castlingAble[2][2]; 
 
 #ifdef HASH_ACTIVE
 	long long hMult[8][8];
@@ -47,6 +49,7 @@ public:
 	bool ValidEmpty(int x, int y);
 	bool ValidBoth(int x, int y, Color myColor);
 	bool ValidOpponent(int x, int y, Color myColor);
+	bool CastlingEnable(bool isRight);
 	void CloneField(int fromX, int fromY, int toX, int toY);
 	void ClearField(int x, int y);
 	void SetField(int x, int y, Color color, Figure figure);
@@ -54,6 +57,7 @@ public:
 	int GetRealBenefit();
 	void NewGame();
 	void PrintPosition();
+	
 	Desk();
 	~Desk();
 };

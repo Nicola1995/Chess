@@ -15,7 +15,7 @@ enum Figure {
 };
 
 enum StoryType {
-	NXT_TURN, FIELD_CHANGE
+	NXT_TURN, FIELD_CHANGE, FOCUS_FIELD, CASTLING
 };
 
 

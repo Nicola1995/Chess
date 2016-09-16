@@ -89,6 +89,20 @@ bool Desk::ValidBoth(int x, int y, Color myColor)
 	return ValidEmpty(x, y) || ValidOpponent(x, y, myColor);
 }
 
+bool Desk::CastlingEnable(bool isRight)
+{
+	int y = 7 - 7 * (turn & 1);
+	int t = isRight ? 1 : 0;
+	if (castlingAble[turn & 1][t])
+	{
+		if (isRight)
+			return color[6][y] == Color::EMPTY;
+		else
+			return color[1][y] == Color::EMPTY && color[2][y] == Color::EMPTY;
+	}
+	return false;
+}
+
 #pragma endregion
 
 #pragma region Position changing
@@ -111,6 +125,11 @@ void Desk::FixMove()
 #endif
 	turn++;
 	benefit *= -1;
+	
+	story[storyTop].type = StoryType::FOCUS_FIELD;
+	story[storyTop].x = focusX;
+	story[storyTop].y = focusY;
+	storyTop++;
 }
 
 void Desk::CancelMove()
@@ -142,6 +161,13 @@ void Desk::CancelMove()
 			hash += GetFieldHash(x, y);
 #endif
 			benefit += GetFieldBenefit(x, y);
+		} 
+		else if (story[storyTop].type == StoryType::FOCUS_FIELD) {
+			focusX = story[storyTop].x;
+			focusY = story[storyTop].y;
+		}
+		else if (story[storyTop].type == StoryType::CASTLING) {
+			castlingAble[turn & 1][story[storyTop].x] = true;
 		}
 		storyTop--;
 	}
@@ -200,6 +226,8 @@ void Desk::CloneField(int fromX, int fromY, int toX, int toY)
 	hash += GetFieldHash(toX, toY);
 #endif
 	benefit += GetFieldBenefit(toX, toY);
+	focusX = toX;
+	focusY = toY;
 	//ClearField(fromX, fromY);
 #ifdef HASH_ACTIVE
 	NormolizeHash();
@@ -284,6 +312,9 @@ void Desk::NewGame()
 {
 	benefit = 0;
 	turn = 0;
+	for (int i1 = 0; i1 < 4; i1++)
+		castlingAble[i1 / 2][i1 & 1] = true;
+	focusX = focusY = -1;
 #ifdef HASH_ACTIVE
 	hash = 0;
 #endif
